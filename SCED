@@ -1,0 +1,193 @@
+commented note for today 
+
+%MSE Graph-> how the error works  
+
+%under what,  the error has less error
+%visual analysis->generate simulation 
+%looking for the simulation 
+%structured visual analysis
+
+%find the one estimate intervention both are significant 
+%95 percent interval does not include zero visually looks like no change 
+
+%scale
+%location
+
+%significant shock 
+%visual 
+%does not look like big change going on 
+
+
+%up to 6 data points->base line 
+%6,20 cases
+%30, 5 
+% cost effective wise
+
+% Art part
+% what could be changed 
+%observation error
+%time period-> 
+%Intervetion period->
+
+%what based study will be
+%example
+%what would be better 
+% total-> 30 observation
+%3people 10 each
+%2 peole 15 each
+
+
+%reflects what is in the Art field 
+%5 cases 50 obesrvation
+%what happens when we randomize-
+%same DGP 
+%time period-> 
+%Intervetion period->
+
+
+
+%time period, intervention period can be changed based on the 
+%what people usually do on study
+rng(12345)
+%time period
+T = 20;
+%intervention period
+%Tt = rand(5:15)
+%the number of simulations
+I = 1000;
+%number of count-> number of cases-> how many people
+%maybe look at 10 or 15 later
+% up to 100 people for just now/
+%
+nc = 15;
+
+y = zeros(T,1);
+s2 = randn(T,1);
+y(1,1) = 0+s2(T,1);
+
+%Observation Error->DGP Error
+% change it to 1 -< it might have more error
+%impact estimation overall, 
+s = 0.1;
+%fixed
+
+
+j = 1;
+k = 1;
+
+% coefficients
+% 95 percent interval include 0 
+%find the simulation
+% under 15 simulation-
+
+% calculate the inverval- 
+%look significant or not 
+%plot Fist 3
+% make graph
+% visually change it or not
+% after intervention, 
+
+
+%% no unit root; location shock; scale shock; no lag
+l = 1;
+while l==1
+    y = zeros(T,nc);
+    theta = unifrnd(0.95,1,1);
+    b0 = unifrnd(-0.01,0.01,1);
+    b2 = unifrnd(-0.01,0.01,1);
+    b1 = unifrnd(-0.01,0.01,1);
+    b3 = unifrnd(-0.01,0.01,1);
+    c = 1;
+
+    del = zeros(T,1);
+    del(Tt+c,1) = 1;
+    for ii = 1:nc
+        s2 = s*randn(T,nc);
+        y(1,:) = 0+s2(T,:);
+        for t=2:T
+            if t<Tt+c
+                y(t,ii) = theta*y(t-1,ii)+b0+b1*t+s2(t,ii);
+            else
+                y(t,ii) = theta*y(t-1,ii)+b2+b3*(t)+s2(t,ii);
+            end
+        end
+        l = max(y)>100;
+    end
+end
+
+i = 1;
+
+    time = [1:T]';
+    treat = [zeros(Tt,1);ones(T-Tt,1)];
+
+    X = [ones(T,1) [0; y(1:end-1,1)] treat [zeros(Tt,1);[Tt+1:T]'] time];
+    p = size(X,2);
+    delta = [0.999 0.999]; % Discount factor [state observation] variance
+    m_0 = [0; 1; zeros(p-2,1)]; % Prior on mean of BPS coefficients
+    C_0 = eye(p)*1; % Prior on covariance of BPS coefficients
+    n_0 = 1/(1-delta(2)); % Prior on BPS degrees of freedom
+    s_0 = 1; % Prior on BPS observation variance
+    [theta_t,v_t,et,m_post,C_post] = FFBS(y(:,1),X,delta,m_0,C_0,n_0,s_0,1,1);
+
+    mse(i,1) = sqrt((b2-b0-m_post(Tt+c+1,3))^2);
+    mse2(i,1) = sqrt((b3-b1-m_post(Tt+c,4))^2);
+
+for ii=1:nc
+    X = [ones(T,1) [0; y(1:end-1,ii)] treat [zeros(Tt,1);[Tt+1:T]'] time];
+    p = size(X,2);
+    delta = [0.999 0.999]; % Discount factor [state observation] variance
+    m_0 = m_post(2,:); % Prior on mean of BPS coefficients
+    C_0 = squeeze(C_post(2,:,:)); % Prior on covariance of BPS coefficients
+    n_0 = 1/(1-delta(2)); % Prior on BPS degrees of freedom
+    s_0 = 1; % Prior on BPS observation variance
+    [theta_t,v_t,et,m_post,C_post] = FFBS(y(:,ii),X,delta,m_0,C_0,n_0,s_0,1,1);
+
+    mse(i,ii) = sqrt((b2-b0-m_post(Tt+c+1,3))^2);
+    mse2(i,ii) = sqrt((b3-b1-m_post(Tt+c,4))^2);
+end
+
+i = 1;
+
+    time = [1:T]';
+    treat = [zeros(Tt,1);ones(T-Tt,1)];
+
+    X = [ones(T,1) [0; y(1:end-1,1)] treat [zeros(Tt,1);[Tt+1:T]'] time];
+    p = size(X,2);
+    delta = [0.999 0.999]; % Discount factor [state observation] variance
+    m_0 = [0; 1; zeros(p-2,1)]; % Prior on mean of BPS coefficients
+    C_0 = eye(p)*1; % Prior on covariance of BPS coefficients
+    n_0 = 1/(1-delta(2)); % Prior on BPS degrees of freedom
+    s_0 = 1; % Prior on BPS observation variance
+    [theta_t,v_t,et,m_post,C_post] = FFBS(y(:,1),X,delta,m_0,C_0,n_0,s_0,1,1);
+
+    mse1(i,1) = sqrt((b2-b0-m_post(Tt+c+1,3))^2);
+    mse12(i,1) = sqrt((b3-b1-m_post(Tt+c,4))^2);
+
+for ii=1:nc
+    X = [ones(T,1) [0; y(1:end-1,ii)] treat [zeros(Tt,1);[Tt+1:T]'] time];
+    p = size(X,2);
+    delta = [0.999 0.999]; % Discount factor [state observation] variance
+    m_0 = [0; 1; zeros(p-2,1)]; % Prior on mean of BPS coefficients
+    C_0 = eye(p)*1; % Prior on covariance of BPS coefficients
+    n_0 = 1/(1-delta(2)); % Prior on BPS degrees of freedom
+    s_0 = 1; % Prior on BPS observation variance
+    [theta_t,v_t,et,m_post,C_post] = FFBS(y(:,ii),X,delta,m_0,C_0,n_0,s_0,1,1);
+
+    %ESTIMATION ERRORS
+
+    %LOCATION
+    mse1(i,ii) = sqrt((b2-b0-m_post(Tt+c+1,3))^2);
+    %SCALE 
+    mse12(i,ii) = sqrt((b3-b1-m_post(Tt+c,4))^2);
+end
+
+
+
+smse1 = cumsum(mse1.^2)./[1:nc];
+smse12 = cumsum(mse12.^2)./[1:nc];
+
+smse = cumsum(mse.^2)./[1:nc];
+smse2 = cumsum(mse2.^2)./[1:nc];
+
+j = j+1;
+k = k+1;
